@@ -1,9 +1,9 @@
 from typing import List
 from collections import namedtuple
 
-from src.utils import validate_format
-from src.utils import cache
-from src.reader import Reader
+from src.data.utils import validate_format
+from src.data.utils import cache
+from src.data.reader import Reader
 import pandas as pd
 
 
@@ -42,7 +42,7 @@ ML_DATASETS = {
 }
 
 
-def load_feedback(fmt="UIR", variant="100K", reader=None):
+def load_rating(fmt="UIR", variant="100K", reader=None):
     """Load the user-item ratings of one of the MovieLens datasets
     Parameters
     ----------

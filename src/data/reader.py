@@ -8,7 +8,6 @@ def ui_parser(tokens, line_idx, id_inline=False, **kwargs):
     else:
         return [(tokens[0], iid, 1.0) for iid in tokens[1:]]
 
-
 def uir_parser(tokens, **kwargs):
     return [(tokens[0], tokens[1], float(tokens[2]))]
 

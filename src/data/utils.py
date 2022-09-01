@@ -4,8 +4,13 @@ import zipfile
 import tarfile
 from urllib import request
 
-
 from tqdm.auto import tqdm
+
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+tf.logging.set_verbosity(tf.logging.ERROR)
+
+
 
 
 def _urlretrieve(url, fpath):
@@ -113,3 +118,18 @@ def cache(url, unzip=False, relative_path=None, cache_dir=None):
 
     print("File cached!")
     return 
+
+
+def build_rating_sparse_tensor(df):
+    """Function that maps from ratings DataFrame to a tf.SparseTensor
+    Args:
+    ratings_df: a pd.DataFrame with `user_id`, `movie_id` and `rating` columns.
+    Returns:
+    a tf.SparseTensor representing the ratings matrix.
+    """
+    indices = df[['user_id', 'item_id']].values
+    values = df['rating'].values
+    return tf.SparseTensor(
+      indices=indices,
+      values=values,
+      dense_shape=[df.user_id.nunique(), df.user_id.nunique()])
