@@ -11,8 +11,6 @@ tf.disable_v2_behavior()
 tf.logging.set_verbosity(tf.logging.ERROR)
 
 
-
-
 def _urlretrieve(url, fpath):
     """Retrieve data from given url
     Parameters
@@ -33,7 +31,8 @@ def _urlretrieve(url, fpath):
 
         request.install_opener(opener)
         request.urlretrieve(url, fpath, reporthook=report)
-        
+
+
 def _extract_archive(file_path, extract_path="."):
     """Extracts an archive.
     """
@@ -56,16 +55,18 @@ def _extract_archive(file_path, extract_path="."):
                         else:
                             shutil.rmtree(extract_path)
                     raise
-                    
-                    
+
+
 def validate_format(input_format, valid_formats):
     """Check the input format is in list of valid formats
     :raise ValueError if not supported
     """
     if not input_format in valid_formats:
-        raise ValueError('{} data format is not in valid formats ({})'.format(input_format, valid_formats))
+        raise ValueError('{} data format is not in valid formats ({})'.format(
+            input_format, valid_formats))
 
     return input_format
+
 
 def get_cache_path(relative_path, cache_dir=None):
     """Return the absolute path to the cached data file
@@ -83,6 +84,7 @@ def get_cache_path(relative_path, cache_dir=None):
         os.makedirs(os.path.dirname(cache_path))
 
     return cache_path, cache_dir
+
 
 def cache(url, unzip=False, relative_path=None, cache_dir=None):
     """Download the data and cache to file
@@ -117,19 +119,33 @@ def cache(url, unzip=False, relative_path=None, cache_dir=None):
         _urlretrieve(url, cache_path)
 
     print("File cached!")
-    return 
+    return
 
 
-def build_rating_sparse_tensor(df):
-    """Function that maps from ratings DataFrame to a tf.SparseTensor
-    Args:
+def build_rating_sparse_tensor(ratings_df,Tensor_shape):
+  """
+  Args:
     ratings_df: a pd.DataFrame with `user_id`, `movie_id` and `rating` columns.
-    Returns:
+  Returns:
     a tf.SparseTensor representing the ratings matrix.
+  """
+  indices = ratings_df[['user_id', 'item_id']].values
+  values = ratings_df['rating'].values
+  return tf.SparseTensor(
+    indices=indices,
+    values=values,
+    dense_shape=Tensor_shape)
+
+
+def split_dataframe(df, holdout_fraction=0.1):
+    """Splits a DataFrame into training and test sets.
+    Args:
+    df: a dataframe.
+    holdout_fraction: fraction of dataframe rows to use in the test set.
+    Returns:
+    train: dataframe for training
+    test: dataframe for testing
     """
-    indices = df[['user_id', 'item_id']].values
-    values = df['rating'].values
-    return tf.SparseTensor(
-      indices=indices,
-      values=values,
-      dense_shape=[df.user_id.nunique(), df.user_id.nunique()])
+    test = df.sample(frac=holdout_fraction, replace=False)
+    train = df[~df.index.isin(test.index)]
+    return train, test
