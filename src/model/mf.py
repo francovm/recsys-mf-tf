@@ -8,6 +8,8 @@ tf.logging.set_verbosity(tf.logging.ERROR)
 
 class MFmodel:
     """
+    Class object to define the Matrix Factorization model
+
     """
     def __init__(self, embedding_dim=3, regularization_coeff=.1, gravity_coeff=1.,
         init_stddev=0.1):
@@ -18,7 +20,7 @@ class MFmodel:
         self.init_stddev = init_stddev
 
     def _sparse_mean_square_error(self,sparse_ratings, user_embeddings, movie_embeddings):
-        """ A TensorFlow function that takes a sparse rating matrix  A  and the two embedding matrices  U,V  and returns the mean squared error  MSE(A,UVT) .
+        """ A TensorFlow function that takes a sparse rating matrix  A  and the two             embedding matrices  U,V  and returns the mean squared error  MSE(A,UVT) .
         Args:
         sparse_ratings: A SparseTensor rating matrix, of dense_shape [N, M]
         user_embeddings: A dense Tensor U of shape [N, k] where k is the embedding
@@ -52,7 +54,7 @@ class MFmodel:
         A MF Model object that uses a regularized loss.
       """
       # Define origianl shape before splitting data
-      input_shape = [ratings.user_id.nunique()+1, ratings.item_id.nunique()+1]
+      input_shape = [ratings.user_id.nunique(), ratings.item_id.nunique()]
       # Split the ratings DataFrame into train and test.
       train_ratings, test_ratings = split_dataframe(ratings)
       # SparseTensor representation of the train and test datasets.
@@ -81,3 +83,5 @@ class MFmodel:
       embeddings = {"user_id": U, "movie_id": V}
 
       return Recommender(embeddings, total_loss, [losses, loss_components])
+
+    

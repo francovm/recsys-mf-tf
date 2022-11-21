@@ -3,6 +3,9 @@ import shutil
 import zipfile
 import tarfile
 from urllib import request
+import numpy as np
+import pandas as pd
+from IPython import display
 
 from tqdm.auto import tqdm
 
@@ -129,13 +132,21 @@ def build_rating_sparse_tensor(ratings_df,Tensor_shape):
   Returns:
     a tf.SparseTensor representing the ratings matrix.
   """
+  ratings_df["item_id"] = ratings_df["item_id"].astype(int)
+  ratings_df["user_id"] = ratings_df["user_id"].astype(int)
+  ratings_df["rating"] = ratings_df["rating"].astype(float)
+
+  ratings_df["item_id"] = ratings_df["item_id"].apply(lambda x: str(x-1))
+  ratings_df["user_id"] = ratings_df["user_id"].apply(lambda x: str(x-1))
+  ratings_df["rating"] = ratings_df["rating"].apply(lambda x: float(x)) 
+
   indices = ratings_df[['user_id', 'item_id']].values
   values = ratings_df['rating'].values
   return tf.SparseTensor(
     indices=indices,
     values=values,
     dense_shape=Tensor_shape)
-
+    
 
 def split_dataframe(df, holdout_fraction=0.1):
     """Splits a DataFrame into training and test sets.
@@ -149,3 +160,48 @@ def split_dataframe(df, holdout_fraction=0.1):
     test = df.sample(frac=holdout_fraction, replace=False)
     train = df[~df.index.isin(test.index)]
     return train, test
+
+# def compute_scores(query_embedding, item_embeddings, cosine=True):
+#   """Computes the scores of the candidates given a query.
+#   Args:
+#     query_embedding: a vector of shape [k], representing the query embedding.
+#     item_embeddings: a matrix of shape [N, k], such that row i is the embedding
+#       of item i.
+#     measure: a string specifying the similarity measure to be used. Can be
+#       either DOT or COSINE.
+#   Returns:
+#     scores: a vector of shape [N], such that scores[i] is the score of item i.
+#   """
+#   u = query_embedding
+#   V = item_embeddings
+#   if cosine is True:
+#     V = V / np.linalg.norm(V, axis=1, keepdims=True)
+#     u = u / np.linalg.norm(u)
+#   scores = u.dot(V.T)
+#   return scores
+    
+# def movie_neighbors(model, movies, title_substring,cosine=True, k=6):
+#     """
+#     Generate movie recommendations.
+#     """
+#     # Search for movie ids that match the given substring.
+#     ids =  movies[movies['title'].str.contains(title_substring)].index.values
+#     titles = movies.iloc[ids]['title'].values
+#     if len(titles) == 0:
+#      raise ValueError("Found no movies with title %s" % title_substring)
+#     print("Nearest neighbors of : %s." % titles[0])
+#     if len(titles) > 1:
+#      print("[Found more than one matching movie. Other candidates: {}]".format(
+#          ", ".join(titles[1:])))
+#     item_id = ids[0]
+#     scores = compute_scores(
+#        model.embeddings["movie_id"][item_id], model.embeddings["movie_id"],
+#        cosine)
+#     # score_key = measure + ' score'
+#     df = pd.DataFrame({
+#        'score': list(scores),
+#        'titles': movies['title'],
+#        'genres': movies['all_genres']
+#     })
+#     display.display(df.sort_values(['score'], ascending=False).head(k))
+
